@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn() { return request.auth != null; }
+  function owner(uid) { return signedIn() && request.auth.uid == uid; }
+  match /ritmoPeople/{uid} {
+   allow get: if signedIn();
+   allow list: if signedIn() && request.query.limit <= 100;
+   allow create, update: if owner(uid)
+    && request.resource.data.keys().hasAll(['name','seen'])
+    && request.resource.data.keys().hasOnly(['name','seen'])
+    && request.resource.data.name is string
+    && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+    && request.resource.data.seen == request.time;
+  }
+  match /ritmoActive/{uid} {
+   allow get: if signedIn();
+   allow list: if signedIn() && request.query.limit <= 100;
+   allow create: if owner(uid)
+    && request.resource.data.keys().hasAll(['subject','started','sessionId'])
+    && request.resource.data.keys().hasOnly(['subject','started','sessionId'])
+    && request.resource.data.subject is string
+    && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() <= 80
+    && request.resource.data.sessionId is string && request.resource.data.sessionId.size() == 36
+    && request.resource.data.started == request.time;
+   allow delete: if owner(uid);
+  }
+  match /ritmoSessions/{sessionId} {
+   allow get: if signedIn();
+   allow list: if signedIn() && request.query.limit <= 5000;
+   allow create: if signedIn()
+    && request.resource.data.keys().hasAll(['user','subject','started','ended'])
+    && request.resource.data.keys().hasOnly(['user','subject','started','ended'])
+    && request.resource.data.user == request.auth.uid
+    && sessionId == get(/databases/$(database)/documents/ritmoActive/$(request.auth.uid)).data.sessionId
+    && request.resource.data.started == get(/databases/$(database)/documents/ritmoActive/$(request.auth.uid)).data.started
+    && request.resource.data.subject == get(/databases/$(database)/documents/ritmoActive/$(request.auth.uid)).data.subject
+    && request.resource.data.ended == request.time
+    && !existsAfter(/databases/$(database)/documents/ritmoActive/$(request.auth.uid));
+  }
+ }
+}
+
+

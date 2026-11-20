@@ -1,0 +1,3 @@
+# Copie para .dev.vars e preencha com o firebaseConfig do seu app Web.
+# Não use chave privada de conta de serviço.
+FIREBASE_WEB_CONFIG='{"apiKey":"SUA_API_KEY_WEB","authDomain":"SEU_PROJETO.firebaseapp.com","projectId":"SEU_PROJETO","appId":"SEU_APP_ID"}'

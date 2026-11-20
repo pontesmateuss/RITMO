@@ -1,0 +1,11 @@
+{
+ "indexes": [{
+  "collectionGroup": "ritmoSessions",
+  "queryScope": "COLLECTION",
+  "fields": [
+   {"fieldPath": "user", "order": "ASCENDING"},
+   {"fieldPath": "ended", "order": "DESCENDING"}
+  ]
+ }],
+ "fieldOverrides": []
+}
